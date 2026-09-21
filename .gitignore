@@ -13,6 +13,15 @@
 
 # 顶层数据目录（若按 README 的「集中数据布局」把卷收到这里）
 /data/
+/auths/
+/config.json
+web/out/
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.exe
+*.pid
 
 # 运行期日志 / 锁 / 状态
 *.log
