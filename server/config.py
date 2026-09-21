@@ -49,10 +49,10 @@ UPSTREAM_DIR = Path(_env('WB_UPSTREAM_DIR', str(_default_upstream_dir())))
 AUTH_DIR = Path(_env('WB_AUTH_DIR', str(UPSTREAM_DIR / 'auths')))
 UPSTREAM_CONFIG = Path(_env('WB_UPSTREAM_CONFIG', str(UPSTREAM_DIR / 'config.json')))
 WB2API_START_SCRIPT = Path(_env(
-    'WB2API_START_SCRIPT', str(UPSTREAM_DIR / 'start-workbuddy2api.cmd'),
+    'WB2API_START_SCRIPT', '',
 ))
 WB2API_STOP_SCRIPT = Path(_env(
-    'WB2API_STOP_SCRIPT', str(UPSTREAM_DIR / 'stop-workbuddy2api.cmd'),
+    'WB2API_STOP_SCRIPT', '',
 ))
 WB2API_LOG_FILE = Path(_env(
     'WB2API_LOG_FILE', str(UPSTREAM_DIR / 'data' / 'gateway' / 'server.log'),

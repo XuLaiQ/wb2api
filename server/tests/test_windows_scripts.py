@@ -3,7 +3,7 @@
 为什么需要它：这类问题**在开发机上不一定看得出来**，而在用户机器上表现成
 一串吓人的报错。
 
-现场（v1.0.51 实际发出去了）：`deploy/windows-native/*.cmd` 用 UTF-8 存了中文
+现场（v1.0.51 实际发出去了）：旧 Windows 模板脚本用 UTF-8 存了中文
 注释，而 cmd.exe 按**系统 ANSI 代码页**解析批处理文件——中文 Windows 上是
 936/GBK。UTF-8 的多字节序列被当成 GBK 解码后，行边界被吃掉、两行粘成一行，
 于是 `REM` 不再位于行首（不再是注释），碎片被当作命令执行：
@@ -60,8 +60,8 @@ class BatchScriptEncodingTest(unittest.TestCase):
             len(files), 3, f'只扫到 {len(files)} 个批处理脚本，扫描逻辑可能失效：{files}',
         )
         names = {p.name for p in files}
-        self.assertIn('start-workbuddy2api.cmd', names)
-        self.assertIn('stop-workbuddy2api.cmd', names)
+        self.assertIn('start-all.cmd', names)
+        self.assertIn('stop-all.cmd', names)
         self.assertIn('start.cmd', names)
 
     def test_ascii_only(self) -> None:
@@ -132,7 +132,7 @@ class GitAttributesTest(unittest.TestCase):
         import subprocess
 
         r = subprocess.run(
-            ['git', 'check-attr', 'eol', '--', 'deploy/windows-native/start-workbuddy2api.cmd'],
+            ['git', 'check-attr', 'eol', '--', 'start-all.cmd'],
             cwd=str(_ROOT), capture_output=True, text=True, timeout=60,
         )
         if r.returncode != 0:
