@@ -1,0 +1,39 @@
+MIT License
+
+Copyright (c) 2026 WorkBuddy 一体化部署 contributors
+
+────────────────────────────────────────────────────────────
+关于本仓库的许可范围
+
+本仓库是**聚合项目**，由两个各自独立的 MIT 项目组成，两者都保留其原始许可证：
+
+  · upstream/  —— Sliverkiss/workbuddy2api
+                  MIT © 2026 Sliverkiss            （见 upstream/LICENSE）
+  · manager/   —— ithtelab/workbuddy-manager
+                  MIT © 2026 WorkBuddy Manager contributors（见 manager/LICENSE）
+
+下面的条款覆盖本仓库**新增与改动**的部分：根目录的 docker-compose.yml、
+.env.example、start-all.cmd、stop-all.cmd、README.md、.gitignore，以及
+manager/ 内为适配单仓库结构所做的改动（逐项列在 README.md 的
+「合并后改了什么」一节）。
+
+两个子项目的版权与许可不因被聚合而改变。
+────────────────────────────────────────────────────────────
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

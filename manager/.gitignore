@@ -1,0 +1,64 @@
+node_modules/
+.next/
+out/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 敏感数据与运行时数据
+data/
+.devdata/
+.env
+.env.local
+*.db
+*.db-wal
+*.db-shm
+users.json
+config.json
+# 部署时写入的版本标记（运行期生成，不提交）
+.version
+
+# 开发参考仓库（不提交）
+.ref/
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/
+.zcode/
+*.log
+next-env.d.ts
+*.tsbuildinfo
+
+# 调试用临时截图
+.*.png
+# 多语言验收脚本的输出
+dev/.verify-*
+# 图标探针 / 截图脚本的输出
+dev/.icon-*
+dev/.shot-*
+dev/.ui-*
+dev/.variants-*
+dev/.pick-*
+dev/.ab-*
+# 复现脚本（repro_pool_mismatch.py）的临时数据目录
+dev/.repro
+# 积分到期界面验收脚本（verify_credit_expiry_ui.py）的临时数据与截图
+dev/.credit-expiry
+dev/.credit-shots
+# 入站日志原因验收脚本（verify_access_log_reason_ui.py）的临时数据与截图
+dev/.access-log
+dev/.access-shots
+# 任务筛选栏验收脚本（verify_task_filter_ui.py）的临时数据与截图
+dev/.task-filter
+dev/.task-shots
+# 失败统计验收脚本（verify_failure_stats_ui.py）的临时数据与截图
+dev/.fail-stats
+dev/.fail-shots
+# 登录轮询可见性验收脚本（verify_login_poll_visibility.py）的临时数据与截图
+dev/.login-poll
+dev/.login-shots
+
+# 安全测试脚本（临时）
+.sec*.py
