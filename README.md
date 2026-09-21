@@ -219,5 +219,8 @@ docker compose up -d --build
 | 本机开着 Clash 等 TUN 代理时连不上上游 | `.env` 的 `WB_HTTP_PROXY` 保持留空 |
 | 添加账号报错 / 扫码无反应 | 用面板的扫码功能，别用上游 `login.sh`（后者在 Git Bash 下有 python3 缺失等问题） |
 
-更细的部署与运维说明见 `manager/README.md` 与 `manager/deploy/README.md`；
+**服务器部署**（Nginx 反代、HTTPS、安全组、接入 sub2api、备份与迁移、排障表）
+见 **[`DEPLOY.md`](DEPLOY.md)**。
+
+更细的说明见 `manager/README.md` 与 `manager/deploy/README.md`；
 上游的账号池、熔断、签到等机制见 `upstream/README.md`。
