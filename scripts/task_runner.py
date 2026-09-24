@@ -13,7 +13,7 @@
   python3 task_runner.py ALL --yes                      # 批量（写操作慎用，符合预算才执行）
 
 参数
-  account    uid 前缀或 ALL（ALL = auths/workbuddy-*.json 全部）
+  account    uid 前缀或 ALL（ALL = data/auths/workbuddy-*.json 全部）
   --yes      真实执行写操作；缺省 dry-run 不发任何上报/accept/claim
   --only     只处理指定 task_code（可多次），同时过滤 dry-run 展示
   --only-claim 只领奖不点亮（对已完成但未领的账号直接入账；已领任务服务端幂等）

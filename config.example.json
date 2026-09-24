@@ -1,7 +1,7 @@
 {
   "listen": ":7863",
   "api_key": "test_key",
-  "auth_dir": "./auths",
+  "auth_dir": "./data/auths",
   "state_file": "./data/state.json",
   "cooldown": {
     "soft_rate": "600s",

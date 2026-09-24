@@ -7,8 +7,8 @@
 ```bash
 cp .env.example .env
 cp config.example.json config.json
-mkdir -p auths data/gateway data/manager
-sudo chown -R 10001:10001 auths data
+mkdir -p data/auths data/gateway data/manager
+sudo chown -R 10001:10001 data
 docker compose up -d --build
 docker compose logs -f wb2api
 ```
@@ -33,9 +33,10 @@ start-all.cmd
 ```text
 .env
 config.json
-auths/
 data/
 ```
+
+`data/auths/` 保存账号授权凭据。Go 配置中的 `auth_dir` 默认是 `./data/auths`。旧部署升级可执行 `python3 deploy/migrate_auths.py --root .`：脚本会先检查冲突，再迁移文件并更新仍指向旧目录的 `config.json`/`.env`；检测到内容冲突会中止且保留源文件。确认账号正常后，再手动清理其他安装路径中的旧副本。
 
 `config.json` 中的 `api_key` 是 Go 网关入站鉴权密钥；管理端会自动读取它向内置网关发请求。管理端自己的密钥、审计记录和登录用户保存在 `data/manager/manager.db` 与 `data/manager/users.json`。
 

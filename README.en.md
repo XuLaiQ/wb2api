@@ -60,7 +60,7 @@ Tencent CodeBuddy
 The core data flow is:
 
 ~~~text
-Authorized accounts -> auths/*.json -> account pool -> request routing -> CodeBuddy -> SSE / JSON
+Authorized accounts -> data/auths/*.json -> account pool -> request routing -> CodeBuddy -> SSE / JSON
 ~~~
 
 > This is not an official Tencent product. Use only accounts that you own or are explicitly authorized to use, and follow the applicable CodeBuddy terms, laws and organizational policies.
@@ -166,7 +166,7 @@ The old deployment required separate workbuddy2api and workbuddy-manager project
 - Two sets of exposed ports.
 - Two configuration files and two independent service lifecycles.
 
-Historical migration material is kept in [docs/legacy/](docs/legacy/). For current deployments, follow this README and [DEPLOY.md](DEPLOY.md).
+For current deployments and development, follow this README, [DEPLOY.md](DEPLOY.md), and the maintained topic guides listed below.
 
 ## Quick start
 
@@ -302,7 +302,7 @@ Copy config.example.json and adjust the values as needed:
 |---------|---------|
 | listen | Embedded Go gateway listener; Docker does not publish 7863, while native deployments should prefer 127.0.0.1:7863 |
 | api_key | Go gateway inbound credential; set it for any non-isolated deployment |
-| auth_dir | Account credential directory, normally ./auths |
+| auth_dir | Account credential directory, normally ./data/auths |
 | state_file | Account-pool state file, normally under data |
 | schedule | Check-in, travel, activity, keepalive and event-task schedules |
 | pool | Concurrency, cooldown, breaker, expiring-credit and exploration settings |
@@ -323,8 +323,8 @@ Common variables:
 | WB_ADMIN_PASSWORD | empty | Initial admin password; empty means generate and print once |
 | WB2API_MODE | integrated | Recommended for the merged project; native and docker support external gateway setups |
 | WB2API_BASE | http://127.0.0.1:7863 | Manager URL for the Go gateway |
-| WB_UPSTREAM_DIR | project root | Root directory for account, upstream config and gateway data |
-| WB_AUTH_DIR | $WB_UPSTREAM_DIR/auths | Account credential directory |
+| WB_UPSTREAM_DIR | project root | Directory containing the upstream config.json |
+| WB_AUTH_DIR | data/auths under the project root | Account credential directory |
 | WB_DATA_DIR | data/manager | Manager database, users and manager state |
 | WB_TRUST_PROXY | 1 | Trust forwarding headers only from configured proxies |
 | WB_TRUSTED_PROXY_HOPS | 1 | Proxy/CDN depth used to parse X-Forwarded-For |
@@ -341,7 +341,7 @@ Important runtime files:
 
 ~~~text
 config.json                     # Go gateway configuration, including api_key
-auths/workbuddy-*.json          # CodeBuddy account credentials
+data/auths/workbuddy-*.json          # CodeBuddy account credentials
 data/gateway/state.json         # Account-pool state
 data/gateway/server.log         # Go gateway log
 data/manager/manager.db         # Manager database, keys, logs and statistics
@@ -354,26 +354,30 @@ Keep at least these items for migration or backup:
 ~~~text
 .env
 config.json
-auths/
 data/
 ~~~
 
-auths/, config.json, .env and data/manager/users.json contain sensitive material. Encrypt backups and do not upload them to public repositories or public file-sharing services. Code updates must not replace runtime data.
+data/auths/, config.json, .env and data/manager/users.json contain sensitive material. Encrypt backups and do not upload them to public repositories or public file-sharing services. Code updates must not replace runtime data.
 
 ## Project layout
 
 ~~~text
 wb2api/
-├── cmd/                     # Go gateway, login, check-in, credit and stats CLIs
-├── internal/                # Go pool, upstream client, scheduler and protocol core
+├── gateway/                 # Standalone Go gateway module
+│   ├── cmd/                  # Gateway and CLI entry points
+│   ├── internal/             # Pool, upstream, scheduler and protocol core
+│   ├── go.mod
+│   └── go.sum
 ├── server/                  # FastAPI manager, protocol translation, audit and updates
 │   ├── routers/             # Account, key, gateway, log, stats and system APIs
 │   ├── services/            # Embedded Go process, tasks, updates and models
 │   └── tests/               # Manager tests
 ├── web/                     # Next.js management frontend
 ├── scripts/                 # Task and operations helpers
-├── auths/                   # Runtime account credentials; do not commit
-├── data/                    # Runtime state, database and logs; do not commit
+├── data/                    # Runtime data; do not commit
+│   ├── auths/                # Account credentials
+│   ├── gateway/              # Gateway state and logs
+│   └── manager/              # Manager database and user state
 ├── config.example.json      # Gateway configuration template
 ├── .env.example             # Manager environment template
 ├── Dockerfile               # Single-image build
@@ -381,7 +385,7 @@ wb2api/
 ├── start-all.cmd            # Windows one-command start
 ├── stop-all.cmd             # Windows one-command stop
 ├── DEPLOY.md                # Deployment notes
-└── docs/                    # Security, release, i18n and legacy documents
+└── docs/                    # Maintained development, API and security guides
 ~~~
 
 ## Development and testing
@@ -389,9 +393,9 @@ wb2api/
 ### Build the backend
 
 ~~~bash
-go build ./...
-go vet ./...
-go test ./...
+go -C gateway build ./...
+go -C gateway vet ./...
+go -C gateway test ./...
 ~~~
 
 Install manager dependencies and build the static frontend:
@@ -407,16 +411,16 @@ cd ..
 ### Run the manager
 
 ~~~bash
-go build -o wb2api ./cmd/server
+go -C gateway build -o wb2api ./cmd/server
 python -m uvicorn server.main:app --host 127.0.0.1 --port 7864 --env-file .env
 ~~~
 
-FastAPI starts the wb2api binary from the project root. If the binary is missing, build it first or use start.ps1 on Windows, which builds it automatically.
+FastAPI starts the wb2api binary from the project root. If it is missing, run the Go build command above or use start.ps1 on Windows, which builds it automatically.
 
 ### Run tests
 
 ~~~bash
-go test ./...
+go -C gateway test ./...
 python -m unittest discover -s server/tests -p "test_*.py"
 ~~~
 
@@ -426,7 +430,9 @@ If pytest is installed, the Python suite can also be run with:
 python -m pytest server/tests -q
 ~~~
 
-Changes to APIs, authentication, data contracts or frontend behavior should include corresponding test and documentation updates. Do not commit auths/, config.json, .env, data/, web/out/ or build artifacts.
+Existing installations can migrate the old root-level `auths/` directory and update default paths with `python deploy/migrate_auths.py`; the migration stops on conflicting files without overwriting credentials.
+
+Changes to APIs, authentication, data contracts or frontend behavior should include corresponding test and documentation updates. Do not commit config.json, .env, data/, web/out/ or build artifacts.
 
 ## Operations
 
@@ -437,7 +443,7 @@ Changes to APIs, authentication, data contracts or frontend behavior should incl
 3. Set strong random values for api_key and WB_ADMIN_PASSWORD.
 4. Disable proxy buffering for SSE and use sufficiently long read/write timeouts.
 5. Set WB_MANAGER_HOST=0.0.0.0 only when necessary, and configure trusted proxy networks and hop count correctly.
-6. Back up auths/, config.json and data/ regularly, with restricted backup permissions.
+6. Back up config.json and data/ regularly, with restricted backup permissions.
 
 Minimal Nginx proxy example:
 
@@ -465,7 +471,7 @@ git pull
 docker compose up -d --build
 ~~~
 
-The web updater is intended for deployments with a configured release source and signature verification. Manual updates are suitable for development machines and installations that do not use the updater. Back up auths/, config.json and data/ first.
+The web updater is intended for deployments with a configured release source and signature verification. Manual updates are suitable for development machines and installations that do not use the updater. Back up config.json and data/ first.
 
 ### Routine checks
 
@@ -479,7 +485,7 @@ Common issues:
 
 | Symptom | Action |
 |---------|--------|
-| The console shows zero accounts | Check auths/, ownership for uid 10001 and data/gateway/server.log |
+| The console shows zero accounts | Check data/auths/, ownership for uid 10001 and data/gateway/server.log |
 | The container cannot write data | Run sudo chown -R 10001:10001 auths data and restart |
 | The page returns 404 | Ensure web/out/index.html exists and rerun npm run build:export |
 | The API returns 401 | Check that the downstream key exists, is enabled and has not expired |
@@ -497,7 +503,7 @@ Common issues:
 - /docs, /redoc and /openapi.json are disabled by default and should be re-disabled after temporary debugging.
 - Do not paste account files, cookies, keys or complete logs into public issues when reporting a security problem.
 
-See [docs/SECURITY-AUDIT.md](docs/SECURITY-AUDIT.md) for the security audit and fixed issues.
+See the [latest security audit](docs/SECURITY-AUDIT-2026-09-15.md) for current findings and fixes.
 
 ## Known limitations
 
@@ -513,12 +519,16 @@ See [docs/SECURITY-AUDIT.md](docs/SECURITY-AUDIT.md) for the security audit and 
 
 | Document | Description |
 |----------|-------------|
-| [Deployment notes](DEPLOY.md) | Docker, Windows native and Linux deployment details |
+| [Deployment notes](DEPLOY.md) | Docker, Windows native and Linux deployment |
+| [Project structure](docs/project-structure.md) | Source layout, file ownership and cleanup boundaries |
+| [API tokens](docs/api-tokens.md) | Management access tokens and scopes |
+| [Namespace compatibility](docs/namespace-compat.md) | API namespace compatibility contract |
+| [Anthropic upstream](docs/sub2api-anthropic.md) | Configure an Anthropic upstream in Sub2API |
+| [Internationalization](docs/i18n.md) | Frontend translation and validation workflow |
 | [Release process](docs/release-process.md) | Build, release and version workflow |
 | [Release signing](docs/release-signing.md) | Update-package signing and verification |
-| [Security audit](docs/SECURITY-AUDIT.md) | Authentication, gateway, file-access and deployment security |
-| [Internationalization](docs/i18n.md) | Frontend translation and validation workflow |
-| [Legacy split-project docs](docs/legacy/) | Documentation and Compose files from before the merge |
+| [Security audit](docs/SECURITY-AUDIT-2026-09-15.md) | Security review dated 2026-09-15 |
+| [Historical security audit](docs/SECURITY-AUDIT.md) | Security review for v1.0.0 |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## License

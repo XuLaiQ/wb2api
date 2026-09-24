@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """一次性积分任务脚本的共享函数库.
 
-与 probe_active.py 同风格：从 auths/ 读账号凭证，封装 growth 域 / report 域
+与 probe_active.py 同风格：从 data/auths/ 读账号凭证，封装 growth 域 / report 域
 请求，供 task_*.py 复用。全部默认 dry-run（写动作由调用脚本显式 --yes 放行）。
 
 端点权威来源（Go 代码实测 + 本次实测确认）：
@@ -16,19 +16,19 @@ import json, os, time, glob, urllib.request, urllib.error
 
 
 def _resolve_auths_dir() -> str:
-    """解析 auths 凭证目录：WB2A_AUTHS > 仓库根 auths/ > /root/workbuddy2api/auths 兜底。
+    """解析 auths 凭证目录：WB2A_AUTHS > 仓库根 data/auths/ > /root/workbuddy2api/data/auths 兜底。
 
-    env 显式覆盖最优先；本地仓库 auths/ 按 __file__ 自定位（脚本位于 scripts/ 下，
+    env 显式覆盖最优先；本地仓库 data/auths/ 按 __file__ 自定位（脚本位于 scripts/ 下，
     仓库根为其上两级），非 Linux 部署（auth 不在 /root/workbuddy2api）自动回落
-    本地 auths/；兜底保持 Linux 服务器行为不变。
+    本地 data/auths/；兜底保持 Linux 服务器行为不变。
     """
     env = os.environ.get("WB2A_AUTHS")
     if env:
         return env
-    local = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "auths")
+    local = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "auths")
     if os.path.isdir(local):
         return local
-    return "/root/workbuddy2api/auths"
+    return "/root/workbuddy2api/data/auths"
 
 
 AUTHS = _resolve_auths_dir()
@@ -49,7 +49,7 @@ CLIENT_UA = "CLI/2.63.2 CodeBuddy/2.63.2"
 
 
 def load_auth(uid_or_file: str) -> dict:
-    """从 auths/ 加载账号凭证，uid_or_file 为 uid 前缀或 auths 文件名。
+    """从 data/auths/ 加载账号凭证，uid_or_file 为 uid 前缀或 auths 文件名。
 
     返回 {token, uid, domain, nick, file, realm} 六元组。
     realm 读取兼容嵌套形（`auth.realm`，login.sh --realm=global 落盘形态）与

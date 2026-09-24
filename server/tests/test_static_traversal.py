@@ -8,7 +8,7 @@
   - `users.json`：内含签发会话 Cookie 的 `secret`，可据此**伪造 admin 会话**
   - `.env`：`WB_SECRET` 等
   - 上游 `config.json`：`api_key`（可直接盗用额度）
-  - `auths/*.json`：腾讯账号 `accessToken`（等于接管账号）
+  - `data/auths/*.json`：腾讯账号 `accessToken`（等于接管账号）
 
 修复要点是「resolve() 归一化后强制仍在 STATIC_DIR 内」。这些用例锁定该行为：
 既要拦住各类穿越变体，也不能误伤正常的静态资源与目录索引。

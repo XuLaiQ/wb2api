@@ -11,7 +11,7 @@ Environment=WB_MANAGER_PORT=7864
 Environment=WB2API_BASE=http://127.0.0.1:7863
 Environment=WB2API_MODE=integrated
 Environment=WB_UPSTREAM_DIR=/opt/wb2api
-Environment=WB_AUTH_DIR=/opt/wb2api/auths
+Environment=WB_AUTH_DIR=/opt/wb2api/data/auths
 Environment=WB_UPSTREAM_CONFIG=/opt/wb2api/config.json
 Environment=WB2API_BINARY=/opt/wb2api/wb2api
 Environment=WB2API_LOG_FILE=/opt/wb2api/data/gateway/server.log

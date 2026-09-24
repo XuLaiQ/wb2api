@@ -181,7 +181,7 @@ def extract_scripts(rep: logging.Logger | None = None) -> tuple[bool, str]:
     """把上游容器里的 `scripts/` 提取到本地，供本面板调用。
 
     为什么要提取而不是 `docker exec` 每次跑：
-      · 脚本会 glob `auths/` 并读写文件、还会访问网络；在容器里跑要处理它的
+      · 脚本会 glob `data/auths/` 并读写文件、还会访问网络；在容器里跑要处理它的
         工作目录、uid、以及把 auths 暴露进去 —— 每个环节都是新的失败面；
       · 提取一次后就是普通文件，与宿主机部署完全同一条执行路径，调试、日志、
         超时控制都复用同一套；
@@ -406,7 +406,7 @@ def start(mode: str, target: str = 'ALL') -> tuple[bool, str]:
 async def _run(argv: list[str], mode: str, target: str) -> None:
     """跑子进程并把输出累积到状态里（尾部保留）。"""
     env = dict(os_environ())
-    # 显式指定账号目录：脚本自身的回落顺序（WB2A_AUTHS > 仓库内 auths/ >
+    # 显式指定账号目录：脚本自身的回落顺序（WB2A_AUTHS > 仓库内 data/auths/ >
     # /root/...）不一定指向本面板管的那批文件，传错会「跑了个寂寞」还看不出来。
     env['WB2A_AUTHS'] = str(config.AUTH_DIR)
     # 与 argv 里的 `-u` 双保险：两者都是「不缓冲」的表达，任一被忽略时另一个兜住

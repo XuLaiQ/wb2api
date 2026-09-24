@@ -10,7 +10,7 @@
   python3 school_open_day_2026.py --list <uid8> [...更多uid]  # 盘点指定账号
   python3 school_open_day_2026.py --run --yes             # 点亮并领取任务
   python3 school_open_day_2026.py --lottery-only --yes    # 只抽奖（清空抽奖次数）
-  账号参数为 auths/workbuddy-<uid8>.json 的 uid 前缀，可多个；缺省或 ALL 即全部。
+  账号参数为 data/auths/workbuddy-<uid8>.json 的 uid 前缀，可多个；缺省或 ALL 即全部。
 
 参数：
   accounts        uid 前缀（可多个）或 ALL；--token 时可不传
@@ -31,7 +31,7 @@
   - student-verify（学生认证）为人工环节，脚本不碰、不伪造。
 
 依赖：复用 scripts/task_common.py 的 load_auth / AUTHS 常量；
-账号凭证位于 auths/ 目录下 workbuddy-<uid8>.json。
+账号凭证位于 data/auths/ 目录下 workbuddy-<uid8>.json。
 """
 import sys, os, json, time, hashlib, argparse, glob, uuid, urllib.request, urllib.error
 
@@ -823,7 +823,7 @@ def main():
                 print(f"ERR: {e}")
 
     if not auths:
-        print("ERR: 无可用账号（检查 auths/ 或 --token）")
+        print("ERR: 无可用账号（检查 data/auths/ 或 --token）")
         sys.exit(1)
 
     for auth in auths:

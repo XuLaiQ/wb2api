@@ -36,7 +36,7 @@ _UID_SHAPE = re.compile(r'^[0-9A-Za-z_-]{6,64}$')
 # 账号**标签**形态（上游 7e43884 起）：`昵称(uid8)`，昵称为空时退化成纯 uid8。
 #
 # 为什么必须认它：上游 `logfmt.Label()` 把调度日志里的账号标识从纯 uid8 改成
-# `昵称(uid8)`（`internal/scheduler/scheduler.go:340` 等约 30 处），理由是排障时
+# `昵称(uid8)`（`gateway/internal/scheduler/scheduler.go:340` 等约 30 处），理由是排障时
 # 人眼没法从 uid8 认出是哪个号。**而我们的解析器只认 `[0-9A-Za-z_-]`**，于是
 # 全部账号维度的行会静默消失——不报错、不崩溃，只是「任务记录」里越来越少。
 # 最要命的是 `travel …: claim ok record=… reward=…` 是唯一能拿到旅行积分的日志源，
@@ -94,7 +94,7 @@ _SCHED_SKIP_LINE = re.compile(
 # ── 脚本类任务（第五、六类）──────────────────────────────
 # 上游 2026-09-14 把「开学季」与「夜猫」从宿主机 crontab 迁入内置调度器，
 # 它们不是「每账号一个 uid」的形态，而是**整批跑一个脚本**，因此日志只有
-# 成败两行（见 internal/scheduler/school.go 的 runScript）：
+# 成败两行（见 gateway/internal/scheduler/school.go 的 runScript）：
 #     <kind>: ok (<script>)             成功
 #     WARN: <kind> (<script>): <err>    失败
 # 上面四种形态都要求 `<kind> <token>:`，匹配不到这种，需单独处理——

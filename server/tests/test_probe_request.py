@@ -120,7 +120,7 @@ class ProbeRequestShapeTest(unittest.TestCase):
         指纹词就永远安全。这条测试守住这一点：将来有人把探测内容改得像
         Claude Code / Codex 的自述（那些正是被拦的模板句），会在这里失败。
 
-        词表来源：上游 internal/upstream/sanitize.go 的 sanitizeFeatures。
+        词表来源：上游 gateway/internal/upstream/sanitize.go 的 sanitizeFeatures。
         """
         self._probe()
         body = _Client.sent['json']

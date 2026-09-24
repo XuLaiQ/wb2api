@@ -74,6 +74,13 @@ class BilingualReadmeTest(unittest.TestCase):
         self.assertEqual(n_cn, n_en,
                          f'截图数量不一致（中文 {n_cn} / 英文 {n_en}）—— 某处少了一张')
 
+    def test_documentation_links_exist(self) -> None:
+        """README 中指向 docs/ 的专题文档链接必须对应实际文件。"""
+        for name, text in (("README.md", self.cn), ("README.en.md", self.en)):
+            targets = re.findall(r"\]\((docs/[^)#]+)(?:#[^)]*)?\)", text)
+            missing = [target for target in targets if not (_ROOT / target).is_file()]
+            self.assertEqual(missing, [], f"{name} 链接到不存在的文档：{missing}")
+
     def test_images_actually_exist(self) -> None:
         """引用的图片文件必须真实存在（否则 GitHub 上显示裂图）。"""
         missing = [p for p in _images(self.cn) if not (_ROOT / p).is_file()]

@@ -3,11 +3,12 @@
 
 FROM golang:1.22-bookworm AS go-builder
 WORKDIR /src
-COPY go.mod go.sum ./
+COPY gateway/go.mod gateway/go.sum ./gateway/
+WORKDIR /src/gateway
 RUN go mod download
-COPY cmd ./cmd
-COPY internal ./internal
-COPY scripts ./scripts
+COPY gateway/cmd ./cmd
+COPY gateway/internal ./internal
+COPY scripts /src/scripts
 RUN mkdir -p /out && CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /out/wb2api ./cmd/server
 
 FROM node:20-slim AS web-builder
@@ -37,7 +38,7 @@ ENV PYTHONUNBUFFERED=1 \
     WB_MANAGER_HOST=0.0.0.0 \
     WB_MANAGER_PORT=7864 \
     WB_UPSTREAM_DIR=/app \
-    WB_AUTH_DIR=/app/auths \
+    WB_AUTH_DIR=/app/data/auths \
     WB_UPSTREAM_CONFIG=/app/config.json \
     WB_DATA_DIR=/app/data/manager \
     WB_STATIC_DIR=/app/web/out \
@@ -56,7 +57,7 @@ COPY scripts /app/scripts
 COPY deploy /app/deploy
 COPY CHANGELOG.md README.md /app/
 RUN useradd -u 10001 -m -s /bin/bash app \
-    && mkdir -p /app/auths /app/data/gateway /app/data/manager \
+    && mkdir -p /app/data/auths /app/data/gateway /app/data/manager \
     && chown -R 10001:10001 /app /usr/local/bin/wb2api
 USER app
 EXPOSE 7864

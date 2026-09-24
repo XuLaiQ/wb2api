@@ -6,7 +6,7 @@
 既难看又让人以为必须带着前缀写。
 
 关键约束（**改错会静默路由到错误的账号池**）：只去 `cn:`，**绝不能动 `global:`**。
-上游 `resolveModel`（internal/server/resolve_model.go）取第一个 `:` 前段，
+上游 `resolveModel`（gateway/internal/server/resolve_model.go）取第一个 `:` 前段，
 恰为 cn/global 才剥离，**其余一律当裸名（= 国内版）**。所以：
 
   · 裸名 == 国内版  → 去掉 `cn:` 安全（存量客户端一直发裸名）

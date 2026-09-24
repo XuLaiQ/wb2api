@@ -103,7 +103,7 @@ def token_issued_at(access_token: str) -> int | None:
 
 
 def list_auth_accounts() -> list[dict]:
-    """读取 auths/ 目录下的本地账号（与 /status 的运行时状态互补）。
+    """读取 data/auths/ 目录下的本地账号（与 /status 的运行时状态互补）。
 
     同时收上游**加载不到**的两类文件，否则它们会在面板上「凭空消失」：
       · `workbuddy*.json.disabled` —— 本面板「临时禁用」改名的产物（见
@@ -198,7 +198,7 @@ def merge_pool_status(accounts: list[dict], status: dict) -> list[dict]:
 
     **in_pool 标记**：该账号是否出现在上游的账号池（`/status.accounts`）里。
 
-    为什么要这个标记：我们读的是 auths/ 目录下的**文件**，上游读的才是**池**。
+    为什么要这个标记：我们读的是 data/auths/ 目录下的**文件**，上游读的才是**池**。
     两者并不总是一致——上游 `LoadDir` 对解析失败的 auth 文件**静默跳过**
     （`Parse` 在 accessToken 为空时直接报错），那个文件因此不在池里、永远选不中。
     而我们此前照样把它列出来，且因为 `/status` 里没有它，cooling / disabled
@@ -733,7 +733,7 @@ def _sanitize_section(section: str, incoming: dict) -> dict:
             # 成本档位条件探索的周期（上游 2026-09-17 新增，默认 "30m"）。
             #
             # 必须在这里拦：上游对它是 `time.ParseDuration` 失败即**启动报错**
-            # （cmd/server/config.go:383 的 fail fast）。而它既不匹配上面那条按
+            # （gateway/cmd/server/config.go:383 的 fail fast）。而它既不匹配上面那条按
             # `_cooldown`/`_rate` 后缀的规则，也不在下面两张区间表里 —— 不补这条
             # 就等于「填错也保存成功，然后上游起不来」，正是本节注释里点名的
             # 最坏形态。可达路径是 `POST /api/settings/upstream` 直接透传 body，

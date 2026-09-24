@@ -167,7 +167,7 @@ class UpstreamConfigRoundTrip(unittest.TestCase):
     def test_prompt_mode_whitelist_matches_upstream(self) -> None:
         """白名单必须与上游 `normalizePrompt` 的取值集**逐项一致**。
 
-        上游源码（cmd/server/config.go）的 switch 只认这三个；多一个或少一个
+        上游源码（gateway/cmd/server/config.go）的 switch 只认这三个；多一个或少一个
         都会造成上面说的两种故障。写成显式断言，便于上游再扩时一眼看到要改哪里。
         """
         upstream_values = {'', 'passthrough', 'custom', 'append'}  # 空串 = 缺省 passthrough
@@ -572,7 +572,7 @@ class CostExploreIntervalTest(unittest.TestCase):
     """`pool.cost_explore_interval`（上游 2026-09-17 新增）的校验与会话。
 
     这个键有个别的时长键没有的**危险形态**：上游对它是
-    `time.ParseDuration` 失败即**启动报错**（`cmd/server/config.go:383`），
+    `time.ParseDuration` 失败即**启动报错**（`gateway/cmd/server/config.go:383`），
     而它既不匹配按 `_cooldown`/`_rate` 后缀的那条规则，也不在任何区间表里 ——
     不单独登记就等于「保存成功，然后上游起不来」，比当场拒绝难查得多。
     可达路径是 `POST /api/settings/upstream` 直接透传 body，不经过前端表单。

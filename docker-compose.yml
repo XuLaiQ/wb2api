@@ -19,7 +19,7 @@ services:
       WB2API_BASE: http://127.0.0.1:7863
       WB2API_BINARY: /usr/local/bin/wb2api
       WB_UPSTREAM_DIR: /app
-      WB_AUTH_DIR: /app/auths
+      WB_AUTH_DIR: /app/data/auths
       WB_UPSTREAM_CONFIG: /app/config.json
       WB_DATA_DIR: /app/data/manager
       WB_STATIC_DIR: /app/web/out
@@ -32,8 +32,7 @@ services:
       - "127.0.0.1:7864:7864"
     volumes:
       # The container runs as uid 10001; prepare bind mounts with:
-      #   chown -R 10001:10001 auths data
-      - ./auths:/app/auths
+      #   chown -R 10001:10001 data
       - ./data:/app/data
       - ./config.json:/app/config.json
     healthcheck:

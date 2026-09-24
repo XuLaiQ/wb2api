@@ -26,7 +26,7 @@ def _command() -> tuple[str, ...]:
     binary = config.WB2API_BINARY
     if not binary.is_file():
         raise FileNotFoundError(
-            f'未找到内置 Go 网关 {binary}。请先执行 `go build -o {binary.name} ./cmd/server`。'
+            f'未找到内置 Go 网关 {binary}。请先执行 `go -C gateway build -o {binary.name} ./cmd/server`。'
         )
     return (str(binary), '-config', str(config.UPSTREAM_CONFIG))
 

@@ -622,7 +622,8 @@ class DockerAssetsTest(unittest.TestCase):
         import yaml
         dc = yaml.safe_load((_ROOT / 'docker-compose.yml').read_text(encoding='utf-8'))
         vols = [str(v) for v in (dc['services']['wb2api'].get('volumes') or [])]
-        self.assertIn('./auths:/app/auths', vols)
+        self.assertNotIn('./auths:/app/data/auths', vols)
+        self.assertEqual(dc['services']['wb2api']['environment'].get('WB_AUTH_DIR'), '/app/data/auths')
         self.assertIn('./data:/app/data', vols)
         self.assertIn('./config.json:/app/config.json', vols)
 
@@ -695,6 +696,16 @@ class ReleasePackageIncludesDockerAssetsTest(unittest.TestCase):
 
     这条测试直接断言打包步骤的 cp 列表，防止再次漏掉。
     """
+
+    def test_workflow_packages_go_module_sources(self) -> None:
+        wf = (_ROOT / '.github' / 'workflows' / 'release.yml').read_text(encoding='utf-8')
+        start = wf.find('组装发布目录')
+        end = wf.find('- name:', start + 10)
+        block = wf[start:end if end > 0 else len(wf)]
+        self.assertIn('cp -r server gateway scripts', block,
+                      '发布包必须包含 FastAPI、Go module 和运行脚本源码')
+        self.assertIn('cp config.example.json', block,
+                      'Go 网关的默认配置模板必须随发布包提供')
 
     def test_workflow_packages_docker_assets(self) -> None:
         wf = (_ROOT / '.github' / 'workflows' / 'release.yml').read_text(encoding='utf-8')

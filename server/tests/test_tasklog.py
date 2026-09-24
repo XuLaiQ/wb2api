@@ -80,7 +80,7 @@ class ParseTaskLines(unittest.TestCase):
 
     # ── 上游 2026-09-17 起的日志格式变化：账号标识变成 `昵称(uid8)` ────
     #
-    # 上游 `logfmt.Label()`（internal/logfmt/logfmt.go:60）把约 30 处调度日志的
+    # 上游 `gateway/internal/logfmt.Label()`（internal/logfmt/logfmt.go:60）把约 30 处调度日志的
     # 账号标识从纯 uid8 改成 `昵称(uid8)`，理由是排障时人眼没法从 uid8 认出是哪个号。
     #
     # 这一组测试是**防静默失效**的：解析器原先只认 [0-9A-Za-z_-]，遇到含中文与
@@ -595,7 +595,7 @@ class ScheduleHoursValidationTest(unittest.TestCase):
 class ScriptStdoutNotInContainerLogTest(unittest.TestCase):
     """**记录一个容易误判的点**：脚本内部的 stdout 不会进容器日志。
 
-    上游 `runScript`（internal/scheduler/school.go）执行子进程后**只记一行**
+    上游 `runScript`（gateway/internal/scheduler/school.go）执行子进程后**只记一行**
     成败摘要，不转发子进程的 stdout：
 
         log.Printf("%s: ok (%s)", name, cmdArgs[1])          # 成功

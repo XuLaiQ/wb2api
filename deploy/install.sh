@@ -17,14 +17,15 @@ fi
 
 cd "$APP_DIR"
 test -f README.en.md
-mkdir -p auths data/gateway data/manager
+python3 deploy/migrate_auths.py --root "$APP_DIR"
+mkdir -p data/auths data/gateway data/manager
 if [[ ! -f config.json ]]; then
   cp config.example.json config.json
   echo "Created $APP_DIR/config.json. Set api_key before serving traffic."
 fi
 
 if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-  chown -R 10001:10001 auths data 2>/dev/null || true
+  chown -R 10001:10001 data 2>/dev/null || true
   docker compose up -d --build
   echo "wb2api is running at http://127.0.0.1:7864"
   exit 0
@@ -32,7 +33,7 @@ fi
 
 python3 -m venv .venv
 .venv/bin/python -m pip install -r server/requirements.txt
-go build -o wb2api ./cmd/server
+go -C gateway build -o wb2api ./cmd/server
 NEXT_OUTPUT_EXPORT=1 npm --prefix web ci
 NEXT_OUTPUT_EXPORT=1 npm --prefix web run build
 echo "Dependencies and binaries are ready. Start with:"

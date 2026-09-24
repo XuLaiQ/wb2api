@@ -308,7 +308,7 @@ def headers(realm: Realm, token: str | None = None,
                                 `application/json, text/plain, */*`）
     聊天（流式）路径的 Accept 由调用方覆盖为流式形态，见 tencent.probe_account。
 
-    关于「登录流程是否也该带 D1/D5」——上游自己的登录工具 cmd/login/main.go
+    关于「登录流程是否也该带 D1/D5」——上游自己的登录工具 gateway/cmd/login/main.go
     至今**没跟**（仍是旧的宽松 Accept、无这两个头）。我们选择跟，理由是：
       1. D1 的注释说这是「官方客户端风控闸门头，所有 API 请求必带」——
          判断依据来自官方客户端行为，与哪个上游进程实现无关；

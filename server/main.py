@@ -234,7 +234,7 @@ def _safe_static_path(full_path: str) -> Path | None:
     由于 ASGI 会先对 %2f 解码，`/..%2f..%2fdata%2fusers.json` 这类请求
     在 `Path / str` 拼接后指向了部署目录**之外**，导致任意文件读取——
     实测可读到 `users.json`（内含签发会话的 secret，可据此伪造 admin 会话）、
-    `.env`、上游 `config.json`（api_key）与 `auths/*.json`（账号 accessToken）。
+    `.env`、上游 `config.json`（api_key）与 `data/auths/*.json`（账号 accessToken）。
 
     修法：用 `resolve()` 归一化后，强制要求结果仍位于 STATIC_DIR 之内。
     这是防目录穿越的标准做法，能同时覆盖 `..`、编码斜杠、绝对路径与

@@ -137,7 +137,7 @@ class ScriptExtractionTest(unittest.TestCase):
     报障现象：官方**镜像**部署上游时，面板说
     「未找到上游任务脚本（/opt/workbuddy2api/scripts/task_runner.py）」。
     原因是上游镜像把脚本 COPY 进容器内的 `/app/scripts/`，而宿主机挂载目录里
-    根本没有 `scripts/`（用户只挂了 config.json 与 auths）—— 于是无论怎么配
+    根本没有 `scripts/`（用户只挂了 config.json 与 data/auths）—— 于是无论怎么配
     都找不到，除非手动从镜像里扒脚本出来（那就每次上游更新都要重来一遍）。
 
     修法：找不到就 `docker cp` 从容器里提取到本地缓存，并以**镜像 ID** 为指纹

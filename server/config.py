@@ -41,12 +41,11 @@ WB2API_BINARY = Path(_env(
 
 # Shared gateway data files
 #
-# 顺序很关键：先定 UPSTREAM_DIR，其余三项**由它派生**。反过来（先 UPSTREAM_CONFIG
-# 再取 .parent）是原实现的写法，在合并结构下会指错——用户只改 WB_AUTH_DIR 一项时，
-# 上游目录就跟着变了，而 native 启停脚本仍按 config 那份找，结果一半功能落在 A
-# 目录、另一半落在 B 目录且不报错。现在全项目只有 UPSTREAM_DIR 一处口径。
+# 网关配置仍位于 UPSTREAM_DIR；账号凭据和可变运行数据统一位于 data/。
+# WB_AUTH_DIR 可显式覆盖凭据目录，默认独立于配置文件目录，避免自定义 config 路径时
+# 意外把账号密钥写进源码/配置目录。
 UPSTREAM_DIR = Path(_env('WB_UPSTREAM_DIR', str(_default_upstream_dir())))
-AUTH_DIR = Path(_env('WB_AUTH_DIR', str(UPSTREAM_DIR / 'auths')))
+AUTH_DIR = Path(_env('WB_AUTH_DIR', str(ROOT / 'data' / 'auths')))
 UPSTREAM_CONFIG = Path(_env('WB_UPSTREAM_CONFIG', str(UPSTREAM_DIR / 'config.json')))
 WB2API_START_SCRIPT = Path(_env(
     'WB2API_START_SCRIPT', '',

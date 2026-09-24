@@ -9,8 +9,8 @@
 把「每个端点该带哪些头」逐条钉死。
 
 上游参照位置（2026-09-14，commit 6cee564c）：
-  * internal/upstream/headers.go  CommonHeaders / ChatHeaders / BillingHeaders
-  * internal/upstream/trial_test.go  断言 trial 必须带 X-User-Id
+  * gateway/internal/upstream/headers.go  CommonHeaders / ChatHeaders / BillingHeaders
+  * gateway/internal/upstream/trial_test.go  断言 trial 必须带 X-User-Id
   * scripts/global_region.py         地区注册的请求体形状（注释标注「实测」）
 """
 from __future__ import annotations

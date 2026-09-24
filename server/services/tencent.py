@@ -1,4 +1,4 @@
-"""腾讯 CodeBuddy 登录 / 签到协议客户端（对齐 workbuddy2api cmd/login）。
+"""腾讯 CodeBuddy 登录 / 签到协议客户端（对齐 workbuddy2api gateway/cmd/login）。
 
 国内版与国际版共用**同一套路径**，只是 base 与 Origin/Referer/UA 随版本变；
 少数接口的候选路径顺序两边相反（见 realm.billing_paths 的注释）。
@@ -177,7 +177,7 @@ async def poll_login(state: str, realm: Realm | None = None) -> dict:
     # 这里**不** drop_state —— 刻意留给调用方在账号真正落盘之后再丢。
     #
     # 早先是先丢再返回，看起来更整洁，实际制造了一个很难查的故障（issue #26）：
-    # 轮询拿到 ready 后，路由还要落盘（写 auths/）并记签到日志；若其中任何一步抛错
+    # 轮询拿到 ready 后，路由还要落盘（写 data/auths/）并记签到日志；若其中任何一步抛错
     # （宝塔/1Panel 部署下 auths 目录属主不对 → PermissionError 很常见），
     # 前端那次请求拿到 500、它的 catch 静默吞掉，下一轮再轮询时 state 已不在缓存里
     # → 返回 invalid → 界面显示「二维码已失效」。而**腾讯侧其实已经授权成功**，

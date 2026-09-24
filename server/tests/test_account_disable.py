@@ -5,7 +5,7 @@
 意义（改了立刻被内存状态刷回去）。
 
 可行路径是**改文件名**：上游用 glob `workbuddy*.json` 收集账号文件
-（`internal/auth/auth.go` 的 `AuthFileGlob`），所以把文件改名成
+（`gateway/internal/auth/auth.go` 的 `AuthFileGlob`），所以把文件改名成
 `workbuddy-xxx.json.disabled` 之后它就不再被加载、从池里消失；启用就是改回原名。
 
 新上游（2026-09-18 起）额外要求：那边加了 **auths 目录热加载**——每 5 秒轮询目录

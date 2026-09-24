@@ -447,13 +447,13 @@ def _update_merged_repo(rep: Reporter) -> None:
                 '子目录，仓库的 .git 不在容器里，无法在容器内执行 git。', 'warn')
         rep.log('请在宿主机执行（一条命令完成拉取与重建）：', 'warn')
         rep.log('  cd <仓库目录> && git pull && docker compose up -d --build', 'warn')
-        rep.log('放心：拉取不会动你的账号与配置 —— auths/、config.json、data/、'
+        rep.log('放心：拉取不会动你的账号与配置 —— data/auths/、config.json、data/、'
                 '.env 都在 .gitignore 里，git 根本不跟踪它们。', 'warn')
         return
 
     rep.log(f'本仓库（{repo}）包含上游，更新整个仓库…')
 
-    # 1) 本地改动。运行期文件（auths/、config.json、data/、.env）都在 .gitignore
+    # 1) 本地改动。运行期文件（data/auths/、config.json、data/、.env）都在 .gitignore
     #    里，不会出现在这里；真出现了说明用户改过被跟踪的文件，备份后丢弃。
     rc, status = run(['git', 'status', '--porcelain'], cwd=repo, rep=rep, check=False)
     dirty = [line for line in status.splitlines() if line.strip()]

@@ -1,7 +1,7 @@
 # ── 合并仓库根级忽略 ─────────────────────────────────────
 #
 # upstream/ 与 manager/ 各自保留原仓库的 .gitignore，会继续在各自目录内生效
-# （auths/、data/、config.json、node_modules、.venv、web/out、*.db …）。
+# （data/、config.json、node_modules、.venv、web/out、*.db …）。
 # 这里只补「合并后才出现」的顶层条目。
 
 # 统一环境变量：只提交模板，不提交填好的那份
@@ -13,7 +13,6 @@
 
 # 顶层数据目录（若按 README 的「集中数据布局」把卷收到这里）
 /data/
-/auths/
 /config.json
 web/out/
 .venv/

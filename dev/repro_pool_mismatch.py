@@ -1,6 +1,6 @@
 """复现「首页说在线、账号列表说未加载」的最小环境。
 
-起一个假上游（账号池里**故意少一个**账号）+ 管理端，并在 auths/ 下放两个
+起一个假上游（账号池里**故意少一个**账号）+ 管理端，并在 data/auths/ 下放两个
 账号文件——其中一个上游不会加载。这正是用户截图里的场景。
 
     python dev/repro_pool_mismatch.py
@@ -154,12 +154,12 @@ def main() -> int:
             write_auth(auth_dir, account)
         pool_names = [p['nickname'] for _a, p in STATUS_CASES if p]
         print(f'假上游: http://127.0.0.1:{UPSTREAM_PORT}（池内 {len(pool_names)} 个: {pool_names}）')
-        print(f'auths/ 下 {len(STATUS_CASES)} 个文件，其中 {len(STATUS_CASES) - len(pool_names)} 个不在池里')
+        print(f'data/auths/ 下 {len(STATUS_CASES)} 个文件，其中 {len(STATUS_CASES) - len(pool_names)} 个不在池里')
     else:
         for acc in (IN_POOL, OUT_OF_POOL):
             write_auth(auth_dir, acc)
         print(f'假上游: http://127.0.0.1:{UPSTREAM_PORT}（池内仅 {IN_POOL["nickname"]}）')
-        print(f'auths/ 下两个文件: {IN_POOL["nickname"]}, {OUT_OF_POOL["nickname"]}')
+        print(f'data/auths/ 下两个文件: {IN_POOL["nickname"]}, {OUT_OF_POOL["nickname"]}')
 
     server = ThreadingHTTPServer(('127.0.0.1', UPSTREAM_PORT), Upstream)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -175,7 +175,7 @@ def main() -> int:
         'WB_ADMIN_PASSWORD': ADMIN_PW,
     }
     print(f'假上游: http://127.0.0.1:{UPSTREAM_PORT}（池内仅 {IN_POOL["nickname"]}）')
-    print(f'auths/ 下两个文件: {IN_POOL["nickname"]}, {OUT_OF_POOL["nickname"]}')
+    print(f'data/auths/ 下两个文件: {IN_POOL["nickname"]}, {OUT_OF_POOL["nickname"]}')
     print(f'管理端: http://127.0.0.1:{MANAGER_PORT}  (admin / {ADMIN_PW})')
     print('对照首页「账号健康快照」与「账号」页状态列 —— 两处应说法一致。Ctrl+C 退出。')
     try:

@@ -105,7 +105,7 @@ class NativeUpstreamRuntimeTest(unittest.IsolatedAsyncioTestCase):
         """上游目录只能有一处推导口径（评审发现两处会分歧）。
 
         评审发现 `config.UPSTREAM_DIR`（native 模式新增，回退到 config.json 所在目录）
-        与 `updater._upstream_dir()`（原有，回退到 auths 的父目录）是**两套独立推导**。
+        与 `updater._upstream_dir()`（原有，旧实现回退到 AUTH_DIR 的父目录）是**两套独立推导**。
         默认配置下巧合一致，但只要用户单独调整 `WB_AUTH_DIR` 或 `WB_UPSTREAM_CONFIG`
         中的一个，两者就指向不同目录，且没有任何报错：
 

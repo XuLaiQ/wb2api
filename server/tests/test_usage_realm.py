@@ -468,7 +468,7 @@ class UpstreamPoolCountsTest(unittest.TestCase):
          `Boolean(undefined)` 恒为 false → 健康账号永远显示 0（用户截图所示）；
       3. 上游其实已经按版本分好组了：`/status` 的 `realm_totals.cn` / `.global`。
 
-    上游 /status 的响应形状（读其 internal/server/handler.go 确认）：
+    上游 /status 的响应形状（读其 gateway/internal/server/handler.go 确认）：
         {"accounts":[...], "total":N, "healthy":N, "cooling":N, "disabled":N,
          "realm_totals":{"cn":{...},"global":{...}}, ...}
     其中 healthy/cooling/disabled 是**汇总键**，账号条目上没有。

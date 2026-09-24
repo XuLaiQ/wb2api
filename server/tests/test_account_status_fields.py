@@ -165,7 +165,7 @@ class DegradePassthroughTest(unittest.TestCase):
 class NotInPoolTest(unittest.TestCase):
     """账号没进上游池时必须能识别出来（用户报的「面板全绿却报没有健康账号」）。
 
-    我们读的是 auths/ 目录下的**文件**，上游读的才是**池**。两者不总一致：
+    我们读的是 data/auths/ 目录下的**文件**，上游读的才是**池**。两者不总一致：
     上游 `LoadDir` 对解析失败的 auth 文件静默跳过（`Parse` 在 accessToken 为
     空时报错），那个文件永远进不了池、永远选不中。
 

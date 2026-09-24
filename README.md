@@ -60,7 +60,7 @@ FastAPI 管理端 :7864  <- 唯一对外入口
 核心数据流可以概括为：
 
 ~~~text
-授权账号 -> auths/*.json -> 账号池 -> 请求鉴权与路由 -> CodeBuddy -> SSE / JSON 响应
+授权账号 -> data/auths/*.json -> 账号池 -> 请求鉴权与路由 -> CodeBuddy -> SSE / JSON 响应
 ~~~
 
 > 本项目不是腾讯官方软件。请只使用本人拥有或明确获准使用的账号，并自行遵守 CodeBuddy 的服务条款、当地法律及组织内部合规要求。
@@ -165,7 +165,7 @@ FastAPI 管理端 :7864  <- 唯一对外入口
 - 两套端口暴露；
 - 两份配置和两套启停脚本。
 
-历史迁移材料保存在 [docs/legacy/](docs/legacy/)，当前部署请以本 README 和 [DEPLOY.md](DEPLOY.md) 为准。
+当前部署与开发说明以本 README、[DEPLOY.md](DEPLOY.md) 和下方列出的专题文档为准。
 
 ## 快速开始
 
@@ -301,7 +301,7 @@ curl -s http://127.0.0.1:7864/api/healthz
 |------|------|
 | listen | 内置 Go 网关监听地址；统一 Docker 部署不发布 7863，原生部署建议设置为 127.0.0.1:7863 |
 | api_key | Go 网关入站鉴权密钥；公网或管理端启用上游管理能力时必须设置 |
-| auth_dir | 账号凭据目录，默认 ./auths |
+| auth_dir | 账号凭据目录，默认 ./data/auths |
 | state_file | 账号池状态文件，默认位于 data 目录 |
 | schedule | 签到、旅行、活跃、保活及活动任务的开关与执行时间 |
 | pool | 并发、熔断、冷却、过期积分优先级和探索策略 |
@@ -322,8 +322,8 @@ curl -s http://127.0.0.1:7864/api/healthz
 | WB_ADMIN_PASSWORD | 空 | 首次管理员密码；为空则随机生成并打印一次 |
 | WB2API_MODE | integrated | 合并版推荐值；native 用于外部原生网关场景，docker 用于兼容外部容器场景 |
 | WB2API_BASE | http://127.0.0.1:7863 | 管理端访问 Go 网关的地址 |
-| WB_UPSTREAM_DIR | 项目根目录 | 账号、上游配置和网关数据的根目录 |
-| WB_AUTH_DIR | $WB_UPSTREAM_DIR/auths | 账号凭据目录 |
+| WB_UPSTREAM_DIR | 项目根目录 | 上游 config.json 所在目录 |
+| WB_AUTH_DIR | 项目根目录下的 data/auths | 账号凭据目录 |
 | WB_DATA_DIR | data/manager | 管理数据库、用户和管理端状态目录 |
 | WB_TRUST_PROXY | 1 | 是否采信可信反向代理转发的来源 IP |
 | WB_TRUSTED_PROXY_HOPS | 1 | 反向代理/CDN 层数，用于解析 X-Forwarded-For |
@@ -340,7 +340,7 @@ curl -s http://127.0.0.1:7864/api/healthz
 
 ~~~text
 config.json                     # Go 网关配置，含 api_key
-auths/workbuddy-*.json          # CodeBuddy 账号凭据
+data/auths/workbuddy-*.json          # CodeBuddy 账号凭据
 data/gateway/state.json         # 账号池状态
 data/gateway/server.log         # Go 网关日志
 data/manager/manager.db         # 管理端数据库、密钥、日志和统计
@@ -353,26 +353,30 @@ web/out/                        # 前端静态构建产物，可重新生成
 ~~~text
 .env
 config.json
-auths/
 data/
 ~~~
 
-auths/、config.json、.env 和 data/manager/users.json 都含有敏感信息。备份应加密保存，不要上传到公开仓库或公开网盘。升级代码时不要覆盖这些运行时数据。
+data/auths/、config.json、.env 和 data/manager/users.json 都含有敏感信息。备份应加密保存，不要上传到公开仓库或公开网盘。升级代码时不要覆盖这些运行时数据。
 
 ## 项目结构
 
 ~~~text
 wb2api/
-├── cmd/                     # Go 网关、登录、签到、积分和统计 CLI
-├── internal/                # Go 账号池、上游客户端、调度器和协议核心
+├── gateway/                 # 独立 Go 网关模块
+│   ├── cmd/                  # 网关、登录、签到、积分和统计 CLI
+│   ├── internal/             # 账号池、上游客户端、调度器和协议核心
+│   ├── go.mod
+│   └── go.sum
 ├── server/                  # FastAPI 管理端、协议转换、审计和更新服务
 │   ├── routers/             # 账号、密钥、网关、日志、统计和系统 API
 │   ├── services/            # 内置 Go 进程、任务、更新和模型服务
 │   └── tests/               # 管理端测试
 ├── web/                     # Next.js 管理前端
 ├── scripts/                 # 任务和运维辅助脚本
-├── auths/                   # 运行时账号凭据，不应提交
-├── data/                    # 运行时状态、数据库和日志，不应提交
+├── data/                    # 运行时数据（不应提交）
+│   ├── auths/                # 账号凭据
+│   ├── gateway/              # 网关状态与日志
+│   └── manager/              # 管理数据库与用户状态
 ├── config.example.json      # Go 网关配置模板
 ├── .env.example             # 管理端环境变量模板
 ├── Dockerfile               # 单镜像构建
@@ -380,7 +384,7 @@ wb2api/
 ├── start-all.cmd            # Windows 一键启动
 ├── stop-all.cmd             # Windows 一键停止
 ├── DEPLOY.md                # 部署补充说明
-└── docs/                    # 安全、发布、国际化和历史文档
+└── docs/                    # 当前维护的开发、接口与安全专题文档
 ~~~
 
 ## 开发与测试
@@ -388,9 +392,9 @@ wb2api/
 ### 构建后端
 
 ~~~bash
-go build ./...
-go vet ./...
-go test ./...
+go -C gateway build ./...
+go -C gateway vet ./...
+go -C gateway test ./...
 ~~~
 
 构建管理端依赖并生成静态前端：
@@ -406,16 +410,16 @@ cd ..
 ### 运行管理端
 
 ~~~bash
-go build -o wb2api ./cmd/server
+go -C gateway build -o wb2api ./cmd/server
 python -m uvicorn server.main:app --host 127.0.0.1 --port 7864 --env-file .env
 ~~~
 
-FastAPI 启动时会自动拉起同目录下的 wb2api 二进制。若二进制不存在，先运行上面的 go build，或在 Windows 上使用 start.ps1 自动构建。
+FastAPI 启动时会自动拉起项目根目录下的 wb2api 二进制。若二进制不存在，先运行上面的构建命令，或在 Windows 上使用 start.ps1 自动构建。
 
 ### 运行测试
 
 ~~~bash
-go test ./...
+go -C gateway test ./...
 python -m unittest discover -s server/tests -p "test_*.py"
 ~~~
 
@@ -425,7 +429,9 @@ python -m unittest discover -s server/tests -p "test_*.py"
 python -m pytest server/tests -q
 ~~~
 
-涉及接口、鉴权、数据结构或前端行为的改动，应同时更新相关测试和文档。不要把 auths/、config.json、.env、data/、web/out/ 或构建产物提交到仓库。
+旧版部署可运行 `python deploy/migrate_auths.py` 安全迁移根目录 `auths/` 并更新默认配置；发现同名但内容不同的凭据时会中止，不覆盖文件。
+
+涉及接口、鉴权、数据结构或前端行为的改动，应同时更新相关测试和文档。不要把 config.json、.env、data/、web/out/ 或构建产物提交到仓库。
 
 ## 部署与运维
 
@@ -436,7 +442,7 @@ python -m pytest server/tests -q
 3. 设置强随机的 api_key 和 WB_ADMIN_PASSWORD。
 4. 反向代理必须关闭 SSE 缓冲，并设置足够长的读写超时。
 5. 只有在确实需要时才设置 WB_MANAGER_HOST=0.0.0.0；同时正确配置可信代理网段和跳数。
-6. 定期备份 auths/、config.json 和 data/，并保护备份文件权限。
+6. 定期备份 config.json 和 data/，并保护备份文件权限。
 
 Nginx 最小反代示例：
 
@@ -464,7 +470,7 @@ git pull
 docker compose up -d --build
 ~~~
 
-网页“系统更新”适合已经配置好发布源和签名校验的部署；手动更新适合开发机和没有启用自动更新的环境。更新前建议先备份 auths/、config.json 和 data/。
+网页“系统更新”适合已经配置好发布源和签名校验的部署；手动更新适合开发机和没有启用自动更新的环境。更新前建议先备份 config.json 和 data/。
 
 ### 日常检查
 
@@ -478,7 +484,7 @@ curl -s http://127.0.0.1:7864/api/healthz
 
 | 现象 | 处理 |
 |------|------|
-| 页面显示账号数为 0 | 检查 auths/ 是否有凭据、目录是否属于 uid 10001，并查看 data/gateway/server.log |
+| 页面显示账号数为 0 | 检查 data/auths/ 是否有凭据、目录是否属于 uid 10001，并查看 data/gateway/server.log |
 | 容器无法读写数据 | 执行 sudo chown -R 10001:10001 auths data 后重启 |
 | 页面 404 | 确认 web/out/index.html 存在；重新执行 npm run build:export |
 | API 返回 401 | 检查下游密钥是否在管理页面创建、是否已过期或被禁用 |
@@ -496,7 +502,7 @@ curl -s http://127.0.0.1:7864/api/healthz
 - /docs、/redoc 和 /openapi.json 默认关闭；临时开启后不要忘记恢复。
 - 发现凭据泄露或可利用安全问题时，不要在公开 Issue 中粘贴账号文件、Cookie、密钥或完整日志。
 
-安全审计和已修复问题见 [docs/SECURITY-AUDIT.md](docs/SECURITY-AUDIT.md)。
+最新安全审计和已修复问题见 [docs/SECURITY-AUDIT-2026-09-15.md](docs/SECURITY-AUDIT-2026-09-15.md)。
 
 ## 已知限制
 
@@ -512,12 +518,16 @@ curl -s http://127.0.0.1:7864/api/healthz
 
 | 文档 | 内容 |
 |------|------|
-| [部署说明](DEPLOY.md) | Docker、Windows 原生和 Linux 部署补充 |
+| [部署说明](DEPLOY.md) | Docker、Windows 原生和 Linux 部署 |
+| [项目目录约定](docs/project-structure.md) | 源码分层、文件归属与清理边界 |
+| [API Token 说明](docs/api-tokens.md) | 管理端访问令牌与权限范围 |
+| [命名空间兼容](docs/namespace-compat.md) | API 命名空间兼容约定 |
+| [Anthropic 上游配置](docs/sub2api-anthropic.md) | 在 Sub2API 中配置 Anthropic 上游 |
+| [国际化说明](docs/i18n.md) | 前端翻译与校验流程 |
 | [发布流程](docs/release-process.md) | 发布、构建和版本流程 |
 | [发布签名](docs/release-signing.md) | 更新包签名与验签 |
-| [安全审计](docs/SECURITY-AUDIT.md) | 认证、网关、文件访问和部署安全说明 |
-| [国际化说明](docs/i18n.md) | 前端翻译与校验流程 |
-| [历史拆分文档](docs/legacy/) | 合并前两个项目的文档和 Compose 文件 |
+| [安全审计](docs/SECURITY-AUDIT-2026-09-15.md) | 2026-09-15 安全审计结论 |
+| [历史安全审计](docs/SECURITY-AUDIT.md) | v1.0.0 阶段安全审计记录 |
 | [更新日志](CHANGELOG.md) | 版本变更记录 |
 
 ## 许可证

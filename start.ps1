@@ -24,9 +24,9 @@ $binaryName = if ($env:OS -eq 'Windows_NT') { 'wb2api.exe' } else { 'wb2api' }
 $binary = Join-Path $root $binaryName
 if (-not (Test-Path $binary)) {
     $go = Get-Command go -ErrorAction SilentlyContinue
-    if (-not $go) { Write-Error "Missing $binary and Go is not installed. Build with: go build -o $binaryName ./cmd/server" }
+    if (-not $go) { Write-Error "Missing $binary and Go is not installed. Build with: go -C gateway build -o $binary ./cmd/server" }
     Write-Host "Building embedded Go gateway $binaryName ..."
-    & $go.Source build -o $binaryName ./cmd/server
+    & $go.Source -C (Join-Path $root 'gateway') build -o $binary ./cmd/server
     if ($LASTEXITCODE -ne 0) { Write-Error 'Go gateway build failed' }
 }
 
