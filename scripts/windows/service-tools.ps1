@@ -1,9 +1,9 @@
 ﻿# WorkBuddy Manager —— 后台服务管理（Windows / PowerShell）
 #
-#   powershell -ExecutionPolicy Bypass -File service-tools.ps1 start    后台启动（日志写 data\）
-#   powershell -ExecutionPolicy Bypass -File service-tools.ps1 stop     停止
-#   powershell -ExecutionPolicy Bypass -File service-tools.ps1 status   查看状态
-#   powershell -ExecutionPolicy Bypass -File service-tools.ps1 restart  重启
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\service-tools.ps1 start    后台启动（日志写 data\）
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\service-tools.ps1 stop     停止
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\service-tools.ps1 status   查看状态
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\service-tools.ps1 restart  重启
 #
 # 与 start.ps1 的区别：start.ps1 是前台运行（关窗口即停），本脚本用 Start-Process
 # 拉起独立进程，关掉终端也不影响；日志落在 data\manager.out.log 与 data\manager.err.log。
@@ -13,7 +13,7 @@ param(
     [string]$Action = 'status'
 )
 
-$root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
 $python = Join-Path $root '.venv\Scripts\python.exe'
 $outLog = Join-Path $root 'data\manager.out.log'
 $errLog = Join-Path $root 'data\manager.err.log'

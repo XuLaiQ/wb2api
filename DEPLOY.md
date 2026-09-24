@@ -21,10 +21,10 @@ docker compose logs -f wb2api
 copy config.example.json config.json
 python -m venv .venv
 .venv\Scripts\python -m pip install -r server\requirements.txt
-start-all.cmd
+scripts\windows\start-all.cmd
 ```
 
-`start.ps1` 会构建缺失的 Go 二进制并启动 FastAPI；FastAPI 在 lifespan 中启动 Go 网关。`stop-all.cmd` 使用进程树终止两个运行时，避免留下占用 7863 的孤儿进程。
+`scripts/windows/start.ps1` 会构建缺失的 Go 二进制并启动 FastAPI；FastAPI 在 lifespan 中启动 Go 网关。`scripts/windows/stop-all.cmd` 使用进程树终止两个运行时，避免留下占用 7863 的孤儿进程。
 
 ## 数据和备份
 

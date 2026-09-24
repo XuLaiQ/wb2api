@@ -305,7 +305,7 @@ def start_update(target: str) -> tuple[bool, str]:
     if os.name == 'nt' and config.WB2API_MODE in ('native', 'integrated'):
         return False, (
             'Windows 原生部署暂不支持网页一键更新；'
-            '请手动更新根目录代码、重新构建前端，然后运行 service-tools.ps1 restart。'
+            '请手动更新根目录代码、重新构建前端，然后运行 scripts/windows/service-tools.ps1 restart。'
         )
     if (target in ('upstream', 'both')
             and config.WB2API_MODE != 'integrated'

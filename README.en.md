@@ -235,18 +235,18 @@ npm ci
 npm run build:export
 cd ..
 
-.\start-all.cmd
+.\scripts\windows\start-all.cmd
 ~~~
 
-start.ps1 builds wb2api.exe if it is missing, starts FastAPI and lets FastAPI supervise the embedded Go gateway. Open <http://127.0.0.1:7864>.
+scripts/windows/start.ps1 builds wb2api.exe if it is missing, starts FastAPI and lets FastAPI supervise the embedded Go gateway. Open <http://127.0.0.1:7864>.
 
 Stop the service or use the background service helper:
 
 ~~~powershell
-.\stop-all.cmd
-powershell -ExecutionPolicy Bypass -File .\service-tools.ps1 status
-powershell -ExecutionPolicy Bypass -File .\service-tools.ps1 start
-powershell -ExecutionPolicy Bypass -File .\service-tools.ps1 stop
+.\scripts\windows\stop-all.cmd
+powershell -ExecutionPolicy Bypass -File .\scripts\windows\service-tools.ps1 status
+powershell -ExecutionPolicy Bypass -File .\scripts\windows\service-tools.ps1 start
+powershell -ExecutionPolicy Bypass -File .\scripts\windows\service-tools.ps1 stop
 ~~~
 
 FastAPI can start without web/out/, but the management homepage returns 404 until the static frontend has been exported.
@@ -382,8 +382,7 @@ wb2api/
 ├── .env.example             # Manager environment template
 ├── Dockerfile               # Single-image build
 ├── docker-compose.yml       # Single-service orchestration
-├── start-all.cmd            # Windows one-command start
-├── stop-all.cmd             # Windows one-command stop
+├── scripts/windows/         # Windows start/stop and service-management scripts
 ├── DEPLOY.md                # Deployment notes
 └── docs/                    # Maintained development, API and security guides
 ~~~
@@ -415,7 +414,7 @@ go -C gateway build -o wb2api ./cmd/server
 python -m uvicorn server.main:app --host 127.0.0.1 --port 7864 --env-file .env
 ~~~
 
-FastAPI starts the wb2api binary from the project root. If it is missing, run the Go build command above or use start.ps1 on Windows, which builds it automatically.
+FastAPI starts the wb2api binary from the project root. If it is missing, run the Go build command above or use `scripts/windows/start.ps1` on Windows, which builds it automatically.
 
 ### Run tests
 

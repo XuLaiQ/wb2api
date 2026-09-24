@@ -234,18 +234,18 @@ npm ci
 npm run build:export
 cd ..
 
-.\start-all.cmd
+.\scripts\windows\start-all.cmd
 ~~~
 
-start.ps1 会在缺少 wb2api.exe 时自动执行 Go 构建，然后启动 FastAPI；FastAPI 会在同一进程树中拉起 Go 网关。管理页面地址为 <http://127.0.0.1:7864>。
+`scripts/windows/start.ps1` 会在缺少 wb2api.exe 时自动执行 Go 构建，然后启动 FastAPI；FastAPI 会在同一进程树中拉起 Go 网关。管理页面地址为 <http://127.0.0.1:7864>。
 
 停止、查看状态或后台启停：
 
 ~~~powershell
-.\stop-all.cmd
-powershell -ExecutionPolicy Bypass -File .\service-tools.ps1 status
-powershell -ExecutionPolicy Bypass -File .\service-tools.ps1 start
-powershell -ExecutionPolicy Bypass -File .\service-tools.ps1 stop
+.\scripts\windows\stop-all.cmd
+powershell -ExecutionPolicy Bypass -File .\scripts\windows\service-tools.ps1 status
+powershell -ExecutionPolicy Bypass -File .\scripts\windows\service-tools.ps1 start
+powershell -ExecutionPolicy Bypass -File .\scripts\windows\service-tools.ps1 stop
 ~~~
 
 如果只需要启动后端 API 而暂时没有 web/out/，FastAPI 仍可以启动，但管理首页会返回 404；完成前端静态导出后再访问页面即可。
@@ -381,8 +381,8 @@ wb2api/
 ├── .env.example             # 管理端环境变量模板
 ├── Dockerfile               # 单镜像构建
 ├── docker-compose.yml       # 单服务编排
-├── start-all.cmd            # Windows 一键启动
-├── stop-all.cmd             # Windows 一键停止
+├── scripts/                 # 辅助脚本与 Windows 启停脚本
+│   └── windows/              # Windows 启停与服务管理脚本
 ├── DEPLOY.md                # 部署补充说明
 └── docs/                    # 当前维护的开发、接口与安全专题文档
 ~~~
@@ -414,7 +414,7 @@ go -C gateway build -o wb2api ./cmd/server
 python -m uvicorn server.main:app --host 127.0.0.1 --port 7864 --env-file .env
 ~~~
 
-FastAPI 启动时会自动拉起项目根目录下的 wb2api 二进制。若二进制不存在，先运行上面的构建命令，或在 Windows 上使用 start.ps1 自动构建。
+FastAPI 启动时会自动拉起项目根目录下的 wb2api 二进制。若二进制不存在，先运行上面的构建命令，或在 Windows 上使用 scripts/windows/start.ps1 自动构建。
 
 ### 运行测试
 

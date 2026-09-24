@@ -1,12 +1,12 @@
 ﻿# WorkBuddy Manager —— 本机启动脚本（Windows / PowerShell）
 #
-#   powershell -ExecutionPolicy Bypass -File start.ps1
+#   powershell -ExecutionPolicy Bypass -File scripts\windows\start.ps1
 #
 # 等价于 Linux 上的 systemd 常驻服务：前台运行，Ctrl+C 退出。
 # 环境变量全部读根目录的 .env（路径、端口、初始密码都在那里改）。
 $ErrorActionPreference = 'Stop'
 
-$root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
 Set-Location $root
 
 $python = Join-Path $root '.venv\Scripts\python.exe'

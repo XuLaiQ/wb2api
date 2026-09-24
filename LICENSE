@@ -13,7 +13,7 @@ Copyright (c) 2026 WorkBuddy 一体化部署 contributors
                   MIT © 2026 WorkBuddy Manager contributors（见 manager/LICENSE）
 
 下面的条款覆盖本仓库**新增与改动**的部分：根目录的 docker-compose.yml、
-.env.example、start-all.cmd、stop-all.cmd、README.md、.gitignore，以及
+.env.example、scripts/windows/start-all.cmd、scripts/windows/stop-all.cmd、README.md、.gitignore，以及
 manager/ 内为适配单仓库结构所做的改动（逐项列在 README.md 的
 「合并后改了什么」一节）。
 
