@@ -407,54 +407,55 @@ def audit(actor: dict | None, action: str, target: str = '', detail: str = '') -
 
 
 # ── FastAPI 依赖 ─────────────────────────────────────────
-def current_user(request: Request) -> dict:
-    """解析请求身份。**这是管理端唯一的身份入口**。
-
-    仅接受签名 cookie，并且必须**回查用户表**：
-
-      - role 以表里的为准，不用 cookie 里的快照（否则降权后旧 cookie 仍是管理员）
-      - 用户已被删除 → 拒绝（否则删号后其 cookie 在有效期内仍然通行）
-      - 会话版本不匹配 → 拒绝（改密码 / 吊销后旧 cookie 立即失效）
-
-    安全事件记录（2026-09-14）：这里**曾经**接受 `X-API-Key` 头，只要它出现在
-    `users.json` 的 `api_keys` 数组里就直接授予 admin。那个数组没有任何代码
-    去写、没有管理界面，唯一作用就是这条提权后门；而它在早前的路径穿越里
-    与 secret 一起泄露，直接导致生产站管理员被改密码。**已彻底移除**：
-    管理端身份只认签名 cookie。下游调用请用网关的 `/v1/*`（那套密钥走
-    SQLite api_keys 表、只授权模型调用，与后台权限无关）。
-    """
+def _session_user(request: Request) -> dict:
+    """Validate a browser session cookie, without accepting bearer tokens."""
     cfg = load_users()
-    token = request.cookies.get(config.COOKIE_NAME)
-    if not token:
-        raise HTTPException(status_code=401, detail='未登录')
-    obj = _unsign(token, cfg['secret'])
+    token = request.cookies.get(config.COOKIE_NAME) or ''
+    obj = _unsign(token, cfg['secret']) if token else None
     if not obj:
         raise HTTPException(status_code=401, detail='未登录')
-
     username = str(obj.get('username') or '')
     if not username:
         raise HTTPException(status_code=401, detail='未登录')
     row = next((u for u in cfg.get('users', []) if u.get('username') == username), None)
-    if not row:
-        # 用户已被删除：其 token 不应继续有效
+    if not row or int(obj.get('sv') or 0) != session_version(cfg, username):
         raise HTTPException(status_code=401, detail='未登录')
-    if int(obj.get('sv') or 0) != session_version(cfg, username):
-        # 改密码 / 改角色 / 手动吊销之后，旧 token 作废
-        raise HTTPException(status_code=401, detail='登录状态已失效，请重新登录')
     if idle_expired(obj):
-        # 闲置超时（滑动窗口）：常用的人会不断续期，放着不用的到点失效。
-        # 与上面那条分开报，是为了让用户知道「不是我密码/权限变了，是太久没用」。
         raise HTTPException(status_code=401, detail='登录已超时（长时间未操作），请重新登录')
     user = {'username': username, 'role': row.get('role', 'viewer')}
-    # 续期请求交给中间件写 cookie（这里**不产生副作用**：current_user 只解析身份，
-    # 被 FastAPI 依赖注入在任意接口上调用，若在这里写响应会耦合不必要的层）。
-    # 记录在 request.state 上，由 main.py 的中间件统一处理。
     if needs_renewal(obj):
         request.state.session_renew = True
     return user
 
 
+def current_user(request: Request) -> dict:
+    """Resolve a browser session first, then a scoped ``wbt_`` bearer token."""
+    if request.cookies.get(config.COOKIE_NAME):
+        return _session_user(request)
+    authorization = request.headers.get('authorization', '')
+    scheme, _, credential = authorization.partition(' ')
+    if scheme.lower() == 'bearer' and credential.strip():
+        from . import tokensvc
+        row = tokensvc.resolve(credential.strip())
+        if row and tokensvc.usable(row):
+            tokensvc.touch(int(row['id']), str(getattr(request.client, 'host', '') or ''))
+            return {'username': f"token:{row['name']}",
+                    'role': tokensvc.scope_to_role(row['scope']),
+                    'token_id': int(row['id'])}
+    raise HTTPException(status_code=401, detail='未登录')
+
+
 def require_admin(user: dict = Depends(current_user)) -> dict:
+    if user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail='需要管理员权限')
+    return user
+
+
+def require_session_admin(request: Request) -> dict:
+    """High-risk credential-management routes require an actual browser session."""
+    if not request.cookies.get(config.COOKIE_NAME) and request.headers.get('authorization', '').lower().startswith('bearer '):
+        raise HTTPException(status_code=403, detail='API Token 不能访问此会话专属接口')
+    user = _session_user(request)
     if user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail='需要管理员权限')
     return user

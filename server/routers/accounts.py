@@ -26,12 +26,45 @@ async def list_accounts(user: dict = Depends(security.current_user)) -> dict:
     status = await wb2api.get_status()
     wb2api.merge_pool_status(accounts, status)
     synced = sum(1 for a in accounts if a.get('credits') is not None)
+    notes = db.account_notes()
+    for account in accounts:
+        account['note'] = notes.get(str(account.get('uid') or ''), '')
     return {
         'total': len(accounts),
         'accounts': accounts,
         'pool_synced': synced,
         'pool_available': bool(status.get('connected')),
     }
+
+
+@router.put('/accounts/{filename}/note')
+async def account_set_note(
+    filename: str,
+    payload: dict = Body(...),
+    user: dict = Depends(security.require_admin),
+) -> dict:
+    """更新账号备注；按 uid 存储，留空即清除。"""
+    try:
+        path = wb2api._safe_file(filename)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail='账号文件不存在')
+    try:
+        account_file = wb2api.read_account_file(filename)
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail='账号文件无法读取') from exc
+    uid = str((account_file.get('account') or {}).get('uid') or '').strip()
+    if not uid:
+        raise HTTPException(status_code=400, detail='账号文件缺少 uid')
+
+    # 多空白归一成单个空格，确保备注在账号列表中保持单行。
+    note = ' '.join(str(payload.get('note') or '').split())[:100]
+    if note:
+        db.set_account_note(uid, note)
+    else:
+        db.delete_account_note(uid)
+    return {'ok': True, 'uid': uid, 'note': note}
 
 
 @router.get('/status')
@@ -362,7 +395,7 @@ async def account_credits(
 @router.post('/accounts/refresh-credits')
 async def refresh_all_credits(
     force: bool = True,
-    user: dict = Depends(security.require_admin),
+    user: dict = Depends(security.current_user),
 ) -> dict:
     """并发查询所有账号的积分，返回 {uid: credits} 与每条是否来自缓存。
 
@@ -371,6 +404,8 @@ async def refresh_all_credits(
     强制绕过 60 秒缓存；force=false 用于页面加载，命中缓存时不重复请求腾讯。
     无论哪种，都回传 cached / cache_age，前端据此标注「实时 / 缓存」。
     """
+    if force and user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail='需要管理员权限才能强制刷新积分')
     accounts = wb2api.list_auth_accounts()
 
     async def one(
@@ -554,7 +589,7 @@ def checkin_logs(
 
 
 @router.post('/checkin-logs/clear')
-def clear_checkin_logs(user: dict = Depends(security.require_admin)) -> dict:
+def clear_checkin_logs(user: dict = Depends(security.require_session_admin)) -> dict:
     db.clear_checkin_logs()
     return {'ok': True}
 
@@ -718,7 +753,7 @@ async def collect_task_logs(user: dict = Depends(security.require_admin)) -> dic
 
 
 @router.post('/task-logs/clear')
-def clear_task_logs(user: dict = Depends(security.require_admin)) -> dict:
+def clear_task_logs(user: dict = Depends(security.require_session_admin)) -> dict:
     db.clear_task_logs()
     return {'ok': True}
 
@@ -846,7 +881,7 @@ async def account_refresh(filename: str, user: dict = Depends(security.require_a
 
 
 @router.delete('/accounts/{filename}')
-async def account_delete(filename: str, user: dict = Depends(security.require_admin)) -> dict:
+async def account_delete(filename: str, user: dict = Depends(security.require_session_admin)) -> dict:
     try:
         removed = wb2api.delete_auth_account(filename)
     except ValueError as exc:
@@ -858,7 +893,7 @@ async def account_delete(filename: str, user: dict = Depends(security.require_ad
 
 
 @router.post('/restart')
-async def restart(user: dict = Depends(security.require_admin)) -> dict:
+async def restart(user: dict = Depends(security.require_session_admin)) -> dict:
     ok, message = await reload.restart_now()
     return {'ok': ok, 'message': message}
 

@@ -15,11 +15,58 @@ from . import config, db, security
 from .iputil import client_ip
 from .routers import (
     accounts, anthropic, auth, gateway, keys, logs, models, playground,
-    responses, security as security_router, settings, stats, system,
+    responses, security as security_router, settings, stats, system, tokens,
 )
 from .services import embedded, tasklog, taskrun
 
 logger = logging.getLogger(__name__)
+
+
+class StripBasePathMiddleware:
+    """剥离反向代理保留的部署前缀，并重写站内绝对跳转地址。"""
+
+    def __init__(self, app, prefix: str) -> None:
+        self.app = app
+        self.prefix = prefix.rstrip('/')
+
+    async def __call__(self, scope, receive, send):
+        if scope.get('type') != 'http':
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get('path', '')
+        if path == self.prefix:
+            rewritten = '/'
+        elif path.startswith(self.prefix + '/'):
+            rewritten = path[len(self.prefix):]
+        else:
+            rewritten = path
+
+        if rewritten != path:
+            scope = dict(scope)
+            scope['path'] = rewritten
+            raw_path = scope.get('raw_path')
+            if raw_path is not None:
+                prefix = self.prefix.encode('utf-8')
+                if raw_path == prefix:
+                    scope['raw_path'] = b'/'
+                elif raw_path.startswith(prefix + b'/'):
+                    scope['raw_path'] = raw_path[len(prefix):]
+
+        async def send_with_prefix(message):
+            if message.get('type') == 'http.response.start':
+                headers = list(message.get('headers', []))
+                for index, (name, value) in enumerate(headers):
+                    if name.lower() != b'location':
+                        continue
+                    location = value.decode('latin-1')
+                    if location.startswith('/') and not location.startswith('//') \
+                            and not (location == self.prefix or location.startswith(self.prefix + '/')):
+                        headers[index] = (name, (self.prefix + location).encode('latin-1'))
+                message = {**message, 'headers': headers}
+            await send(message)
+
+        await self.app(scope, receive, send_with_prefix)
 
 
 @asynccontextmanager
@@ -67,6 +114,10 @@ app = FastAPI(
     redoc_url='/redoc' if config.ENABLE_DOCS else None,
     openapi_url='/openapi.json' if config.ENABLE_DOCS else None,
 )
+
+if config.BASE_PATH:
+    app.add_middleware(StripBasePathMiddleware, prefix=config.BASE_PATH)
+
 
 if config.CORS_ORIGINS:
     # 只允许**明确列出的**来源。绝不要把 WB_CORS_ORIGINS 设成 `*`：
@@ -117,6 +168,7 @@ async def limit_api_body(request: Request, call_next):
 
 # ── 路由注册顺序很重要：先 API / 网关，最后挂静态文件 ──
 app.include_router(auth.router)
+app.include_router(tokens.router)
 app.include_router(accounts.router)
 app.include_router(keys.router)
 app.include_router(logs.router)

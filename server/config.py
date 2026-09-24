@@ -24,6 +24,8 @@ def _env_int(name: str, default: int) -> int:
 
 PORT = _env_int('WB_MANAGER_PORT', 7864)
 HOST = _env('WB_MANAGER_HOST', '0.0.0.0')
+_BASE_PATH_RAW = _env('WB_BASE_PATH', '').strip('/')
+BASE_PATH = f'/{_BASE_PATH_RAW}' if _BASE_PATH_RAW else ''
 
 def _default_upstream_dir() -> Path:
     """Use the repository root for the embedded gateway's shared files."""

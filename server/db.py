@@ -99,6 +99,22 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 CREATE INDEX IF NOT EXISTS idx_keys_prefix ON api_keys(prefix);
 
+-- 管理面 Bearer token（与仅用于模型调用的 api_keys 分离）。
+CREATE TABLE IF NOT EXISTS api_tokens (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  name          TEXT    NOT NULL,
+  token_hash    TEXT    NOT NULL,
+  prefix        TEXT    NOT NULL,
+  scope         TEXT    NOT NULL DEFAULT 'readonly',
+  enabled       INTEGER NOT NULL DEFAULT 1,
+  expires_at    INTEGER,
+  created_at    INTEGER NOT NULL,
+  created_by    TEXT    NOT NULL DEFAULT '',
+  last_used_at  INTEGER,
+  last_used_ip  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_tokens_prefix ON api_tokens(prefix);
+
 CREATE TABLE IF NOT EXISTS api_key_ips (
   key_id     INTEGER NOT NULL,
   ip         TEXT    NOT NULL,
@@ -182,6 +198,12 @@ CREATE INDEX IF NOT EXISTS idx_ip_logs_ts ON ip_access_logs(ts);
 CREATE TABLE IF NOT EXISTS settings (
   key   TEXT PRIMARY KEY,
   value TEXT
+);
+
+-- 管理员维护的账号备注，按上游 uid 关联，账号文件改名/刷新后仍保留。
+CREATE TABLE IF NOT EXISTS account_notes (
+  uid  TEXT PRIMARY KEY,
+  note TEXT NOT NULL DEFAULT ''
 );
 
 -- 签到 / 保活结果记录。上游只在失败时打日志、成功静默，
@@ -483,6 +505,25 @@ def executemany(sql: str, seq: Iterable[Iterable[Any]]) -> None:
         conn = connect()
         conn.executemany(sql, [tuple(x) for x in seq])
         conn.commit()
+
+
+# ── account notes ─────────────────────────────────────────
+def account_notes() -> dict[str, str]:
+    return {str(row['uid']): str(row['note']) for row in query(
+        'SELECT uid, note FROM account_notes'
+    )}
+
+
+def set_account_note(uid: str, note: str) -> None:
+    execute(
+        'INSERT INTO account_notes (uid, note) VALUES (?, ?) '
+        'ON CONFLICT(uid) DO UPDATE SET note = excluded.note',
+        (uid, note),
+    )
+
+
+def delete_account_note(uid: str) -> None:
+    execute('DELETE FROM account_notes WHERE uid = ?', (uid,))
 
 
 # ── settings ─────────────────────────────────────────────

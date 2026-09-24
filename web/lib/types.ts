@@ -13,6 +13,8 @@ export interface Account {
   file: string;
   uid: string;
   nickname: string;
+  /** 本端保存的账号备注；按 uid 关联，不写入上游账号文件 */
+  note: string;
   enterprise_id: string;
   expires_at: number;
   is_expired: boolean;
@@ -226,6 +228,24 @@ export interface ModelCatalog {
   /** 缓存已存在多少秒 */
   cache_age: number;
   summary: CatalogSummary;
+}
+
+export interface ApiToken {
+  id: number;
+  name: string;
+  prefix: string;
+  scope: 'readonly' | 'admin';
+  enabled: boolean;
+  expires_at: number | null;
+  created_at: number;
+  created_by: string;
+  last_used_at: number | null;
+  last_used_ip: string | null;
+}
+
+/** 明文只在创建时返回一次。 */
+export interface CreatedApiToken extends ApiToken {
+  token: string;
 }
 
 export interface ApiKey {

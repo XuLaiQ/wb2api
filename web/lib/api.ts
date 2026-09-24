@@ -8,6 +8,8 @@ import type {
   CreditsMeta,
   AccountsResponse,
   ApiKey,
+  ApiToken,
+  CreatedApiToken,
   IpAccessLog,
   IpRule,
   Me,
@@ -90,6 +92,9 @@ export const authApi = {
 /* ── 账号 ───────────────────────────────────────────── */
 export const accountApi = {
   list: () => get<AccountsResponse>('/api/accounts'),
+  /** 设置本端账号备注（留空即清除） */
+  setNote: (file: string, note: string) =>
+    put<{ok: boolean; uid: string; note: string}>(`/api/accounts/${encodeURIComponent(file)}/note`, {note}),
   /** 发起扫码登录；realm 决定国内版 / 国际版端点 */
   start: (realm: Realm = 'cn') =>
     post<{state: string; authUrl: string; realm: Realm}>('/api/auth/start', {realm}),
@@ -190,6 +195,15 @@ export const playgroundApi = {
 };
 
 /* ── API 密钥 ───────────────────────────────────────── */
+export const tokenApi = {
+  list: () => get<ApiToken[]>('/api/tokens'),
+  create: (body: {name: string; scope: 'readonly' | 'admin'; expires_at: number | null}) =>
+    post<CreatedApiToken>('/api/tokens', body),
+  update: (id: number, body: Partial<Pick<ApiToken, 'name' | 'scope' | 'enabled' | 'expires_at'>>) =>
+    patch<ApiToken>(`/api/tokens/${id}`, body),
+  remove: (id: number) => del<{ok: boolean}>(`/api/tokens/${id}`),
+};
+
 export const keyApi = {
   list: () => get<ApiKey[]>('/api/keys'),
   create: (body: Partial<ApiKey>) => post<ApiKey>('/api/keys', body),
